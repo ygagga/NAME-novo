@@ -36,6 +36,20 @@ local function fireAvatarChange(id, notificationTitle)
     end
 end
 
+-- 📌 **Cabeça por ID**
+Tabs.Avatar:AddInput("Head ID", {
+    Title = "Mudar Cabeça (ID)",
+    Default = "",
+    Placeholder = "Digite o ID",
+    Numeric = true,
+    Finished = true,
+    Callback = function(s)
+        fireAvatarChange(tonumber(s), "Carregando Cabeça...")
+        wait(1)
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "Sucesso ✅", Text = "Cabeça aplicada!", Duration = 3})
+    end
+})
+
 Tabs.Avatar:AddButton({ Title = "Headless Horseman (👤)", Callback = function() fireAvatarChange(134082579, "Headless Horseman") end })
 Tabs.Avatar:AddButton({ Title = "Korblox DeathSpeaker (👤)", Callback = function() fireAvatarChange(16580493236, "Korblox DeathSpeaker") end })
 
@@ -44,57 +58,74 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
-_G.ESPVisible = true
+_G.ESPEnabled = false
 _G.TextColor = Color3.fromRGB(255, 0, 0) -- Vermelho
 _G.TextSize = 14
 
-local function CreateESP()
-    for _, v in pairs(Players:GetPlayers()) do
-        if v ~= Players.LocalPlayer then
-            local ESP = Drawing.new("Text")
-            RunService.RenderStepped:Connect(function()
-                if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    local Vector, OnScreen = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
-                    ESP.Size = _G.TextSize
-                    ESP.Color = _G.TextColor
-                    ESP.Position = Vector2.new(Vector.X, Vector.Y - 25)
-                    ESP.Text = v.Name
-                    ESP.Visible = _G.ESPVisible and OnScreen
-                else
-                    ESP.Visible = false
-                end
-            end)
+local function ToggleESP(state)
+    _G.ESPEnabled = state
+    if state then
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= Players.LocalPlayer then
+                local ESP = Drawing.new("Text")
+                RunService.RenderStepped:Connect(function()
+                    if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                        local Vector, OnScreen = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
+                        ESP.Size = _G.TextSize
+                        ESP.Color = _G.TextColor
+                        ESP.Position = Vector2.new(Vector.X, Vector.Y - 25)
+                        ESP.Text = v.Name
+                        ESP.Visible = _G.ESPEnabled and OnScreen
+                    else
+                        ESP.Visible = false
+                    end
+                end)
+            end
         end
     end
 end
 
-Tabs.Troll:AddButton({ Title = "Ativar ESP 🔍", Callback = CreateESP })
+Tabs.Troll:AddSwitch({ Title = "ESP 🔍", Default = false, Callback = ToggleESP })
 
 -- 💀 **KillBrick (mata jogadores que tocarem nele)**
-Tabs.Troll:AddButton({ Title = "Spawn KillBrick ☠️", Callback = function()
-    local KillBrick = Instance.new("Part")
-    KillBrick.Size = Vector3.new(5, 1, 5)
-    KillBrick.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, -3, 0)
-    KillBrick.Anchored = true
-    KillBrick.Color = Color3.fromRGB(255, 0, 0)
-    KillBrick.Parent = workspace
+local KillBrick
 
-    KillBrick.Touched:Connect(function(touch)
-        local humanoid = touch.Parent:FindFirstChild("Humanoid")
-        if humanoid and touch.Parent ~= game.Players.LocalPlayer.Character then
-            humanoid.Health = 0
-        end
-    end)
+Tabs.Troll:AddSwitch({ Title = "Spawn KillBrick ☠️", Default = false, Callback = function(state)
+    if state then
+        KillBrick = Instance.new("Part")
+        KillBrick.Size = Vector3.new(5, 1, 5)
+        KillBrick.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, -3, 0)
+        KillBrick.Anchored = true
+        KillBrick.Color = Color3.fromRGB(255, 0, 0)
+        KillBrick.Parent = workspace
+
+        KillBrick.Touched:Connect(function(touch)
+            local humanoid = touch.Parent:FindFirstChild("Humanoid")
+            if humanoid and touch.Parent ~= game.Players.LocalPlayer.Character then
+                humanoid.Health = 0
+            end
+        end)
+    else
+        if KillBrick then KillBrick:Destroy() end
+    end
 end })
 
 -- 🏃‍♂️ **Velocidade Infinita**
-Tabs.Troll:AddButton({ Title = "Velocidade Infinita ⚡", Callback = function()
+Tabs.Troll:AddSwitch({ Title = "Velocidade Infinita ⚡", Default = false, Callback = function(state)
     local player = game.Players.LocalPlayer
-    player.Character.Humanoid.WalkSpeed = 100
+    if state then
+        player.Character.Humanoid.WalkSpeed = 100
+    else
+        player.Character.Humanoid.WalkSpeed = 16
+    end
 end })
 
 -- 🚀 **Pulo Infinito**
-Tabs.Troll:AddButton({ Title = "Pulo Infinito 🦘", Callback = function()
+Tabs.Troll:AddSwitch({ Title = "Pulo Infinito 🦘", Default = false, Callback = function(state)
     local player = game.Players.LocalPlayer
-    player.Character.Humanoid.JumpPower = 200
+    if state then
+        player.Character.Humanoid.JumpPower = 200
+    else
+        player.Character.Humanoid.JumpPower = 50
+    end
 end })
