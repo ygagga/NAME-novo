@@ -82,10 +82,22 @@ local function ToggleESP(state)
                 end)
             end
         end
+    else
+        -- Desativar ESP
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= Players.LocalPlayer then
+                -- Certificando-se de que o ESP do player está sendo desativado
+                for _, drawing in pairs(v.Character:GetChildren()) do
+                    if drawing:IsA("Text") then
+                        drawing.Visible = false
+                    end
+                end
+            end
+        end
     end
 end
 
-Tabs.Troll:AddSwitch({ Title = "ESP 🔍", Default = false, Callback = ToggleESP })
+Tabs.Troll:AddSwitch({ Title = "Ativar/Desativar ESP 🔍", Default = false, Callback = ToggleESP })
 
 -- 💀 **KillBrick (mata jogadores que tocarem nele)**
 local KillBrick
