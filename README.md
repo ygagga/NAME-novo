@@ -97,47 +97,69 @@ local function ToggleESP(state)
     end
 end
 
-Tabs.Troll:AddSwitch({ Title = "Ativar/Desativar ESP 🔍", Default = false, Callback = ToggleESP })
+-- Ativando/Desativando ESP
+Tabs.Troll:AddSwitch({
+    Title = "Ativar/Desativar ESP 🔍",
+    Default = false,
+    Callback = function(state)
+        ToggleESP(state)
+    end
+})
 
 -- 💀 **KillBrick (mata jogadores que tocarem nele)**
 local KillBrick
 
-Tabs.Troll:AddSwitch({ Title = "Spawn KillBrick ☠️", Default = false, Callback = function(state)
-    if state then
-        KillBrick = Instance.new("Part")
-        KillBrick.Size = Vector3.new(5, 1, 5)
-        KillBrick.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, -3, 0)
-        KillBrick.Anchored = true
-        KillBrick.Color = Color3.fromRGB(255, 0, 0)
-        KillBrick.Parent = workspace
+Tabs.Troll:AddSwitch({
+    Title = "Spawn KillBrick ☠️",
+    Default = false,
+    Callback = function(state)
+        if state then
+            KillBrick = Instance.new("Part")
+            KillBrick.Size = Vector3.new(5, 1, 5)
+            KillBrick.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, -3, 0)
+            KillBrick.Anchored = true
+            KillBrick.Color = Color3.fromRGB(255, 0, 0)
+            KillBrick.Parent = workspace
 
-        KillBrick.Touched:Connect(function(touch)
-            local humanoid = touch.Parent:FindFirstChild("Humanoid")
-            if humanoid and touch.Parent ~= game.Players.LocalPlayer.Character then
-                humanoid.Health = 0
-            end
-        end)
-    else
-        if KillBrick then KillBrick:Destroy() end
+            KillBrick.Touched:Connect(function(touch)
+                local humanoid = touch.Parent:FindFirstChild("Humanoid")
+                if humanoid and touch.Parent ~= game.Players.LocalPlayer.Character then
+                    humanoid.Health = 0
+                end
+            end)
+        else
+            if KillBrick then KillBrick:Destroy() end
+        end
     end
-end })
+})
 
 -- 🏃‍♂️ **Velocidade Infinita**
-Tabs.Troll:AddSwitch({ Title = "Velocidade Infinita ⚡", Default = false, Callback = function(state)
-    local player = game.Players.LocalPlayer
-    if state then
-        player.Character.Humanoid.WalkSpeed = 100
-    else
-        player.Character.Humanoid.WalkSpeed = 16
+Tabs.Troll:AddSwitch({
+    Title = "Velocidade Infinita ⚡",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+        if state then
+            player.Character.Humanoid.WalkSpeed = 100
+        else
+            player.Character.Humanoid.WalkSpeed = 16
+        end
     end
-end })
+})
 
 -- 🚀 **Pulo Infinito**
-Tabs.Troll:AddSwitch({ Title = "Pulo Infinito 🦘", Default = false, Callback = function(state)
-    local player = game.Players.LocalPlayer
-    if state then
-        player.Character.Humanoid.JumpPower = 200
-    else
-        player.Character.Humanoid.JumpPower = 50
+Tabs.Troll:AddSwitch({
+    Title = "Pulo Infinito 🦘",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+        if state then
+            player.Character.Humanoid.JumpPower = 200
+        else
+            player.Character.Humanoid.JumpPower = 50
+        end
     end
-end })
+})
+
+-- 🚀 **Finalizando e Exibindo**
+Window:Show()
