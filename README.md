@@ -1,165 +1,172 @@
--- 🔥 Carregando Fluent UI e Addons
+-- Carrega as bibliotecas Fluent, SaveManager e InterfaceManager
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
--- 🎨 Criando a Interface do Hack
+-- Criando a Janela da Interface
 local Window = Fluent:CreateWindow({
-    Title = "Brookhaven RP 🏡",
-    SubTitle = "by (👾 NexusPrime Hub 💠)",
+    Title = "Brookhaven RP 🏡 (Troll Hub 🤡)",
+    SubTitle = "🔥 Zoando geral! 💀",
     TabWidth = 160,
-    Size = UDim2.fromOffset(480, 310),
+    Size = UDim2.fromOffset(500, 320),
     Acrylic = true,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- Criando as abas do menu
+-- Criando Abas
 local Tabs = {
-    Avatar = Window:AddTab({ Title = "Avatar Tab", Icon = "shirt" }),
-    Troll = Window:AddTab({ Title = "Troll Tab", Icon = "skull" }),
+    Troll = Window:AddTab({ Title = "🤡 Troll", Icon = "alert" }),
+    Music = Window:AddTab({ Title = "🎶 Música", Icon = "music" }),
+    About = Window:AddTab({ Title = "ℹ️ Sobre", Icon = "info" })
 }
 
--- 🧑‍🎨 **Sistema de Avatar**
-local function fireAvatarChange(id, notificationTitle)
-    local argsTable = type(id) == "table" and id or {1, 1, 1, 1, 1, id}
-    local args = {"CharacterChange", argsTable, "👾 NexusPrime Hub 💠"}
-    local replicatedStorage = game:GetService("ReplicatedStorage")
-    local starterGui = game:GetService("StarterGui")
 
-    if replicatedStorage and starterGui then
-        local remote = replicatedStorage.RE:FindFirstChild("1Avata1rOrigina1l")
-        if remote then
-            remote:FireServer(unpack(args))
-            starterGui:SetCore("SendNotification", {Title = notificationTitle, Text = "Wait Please 1-10 Seconds", Duration = 5})
+-- Adiciona uma seção para controle de jogadores na aba Troll
+Tabs.Troll:AddSection("Controle de Jogadores")
+
+local selectedPlayer = ""
+local isSpectating = false  -- Variável para controlar o espectar
+
+-- Campo de entrada para o nome do jogador
+Tabs.Troll:AddInput("PlayerName", {
+    Title = "Nome do Jogador",
+    Default = "",
+    Placeholder = "Digite o nome do jogador",
+    Callback = function(value)
+        selectedPlayer = value
+    end
+})
+
+-- Função para teleportar todos os jogadores para o local do jogador que executou o comando
+local function teleportAllPlayers()
+    local players = game:GetService("Players")
+    local localPlayer = players.LocalPlayer
+    local localHumanoidRootPart = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+    if localHumanoidRootPart then
+        -- Teleportando todos os jogadores para a posição do jogador atual
+        for _, targetPlayer in pairs(players:GetPlayers()) do
+            if targetPlayer.Character and targetPlayer ~= localPlayer then
+                local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if targetHumanoidRootPart then
+                    targetHumanoidRootPart.CFrame = localHumanoidRootPart.CFrame
+                end
+            end
         end
     end
 end
 
--- 📌 **Cabeça por ID**
-Tabs.Avatar:AddInput("Head ID", {
-    Title = "Mudar Cabeça (ID)",
+-- Função para espectar o jogador
+local function spectatePlayer(targetUsername)
+    local players = game:GetService("Players")
+    local localPlayer = players.LocalPlayer
+    local targetPlayer = players:FindFirstChild(targetUsername)
+
+    if targetPlayer and targetPlayer.Character then
+        local camera = game.Workspace.CurrentCamera
+        camera.CameraSubject = targetPlayer.Character:FindFirstChildOfClass("Humanoid")
+        isSpectating = true
+    end
+end
+
+-- Função para despectar (retornar a câmera para o jogador original)
+local function despectatePlayer()
+    local players = game:GetService("Players")
+    local localPlayer = players.LocalPlayer
+    local camera = game.Workspace.CurrentCamera
+    camera.CameraSubject = localPlayer.Character:FindFirstChildOfClass("Humanoid")
+    isSpectating = false
+end
+
+-- Botão para teleportar todos os jogadores para o jogador
+Tabs.Troll:AddButton({
+    Title = "Teleportar Todos 🏃‍♂️",
+    Description = "Teleporta todos os jogadores para você!",
+    Callback = function()
+        teleportAllPlayers()
+    end
+})
+
+-- Botão para espectar o jogador
+Tabs.Troll:AddButton({
+    Title = "Espectar 👀",
+    Description = "Veja o que o jogador está fazendo",
+    Callback = function()
+        if selectedPlayer ~= "" then
+            spectatePlayer(selectedPlayer)
+        end
+    end
+})
+
+-- Botão para despectar (voltar para o jogador original)
+Tabs.Troll:AddButton({
+    Title = "Despectar 🚶‍♂️",
+    Description = "Volte para o seu personagem!",
+    Callback = function()
+        if isSpectating then
+            despectatePlayer()
+        end
+    end
+})
+
+
+-----------------------------------------------------------
+-- 🎶 Música
+-----------------------------------------------------------
+
+Tabs.Music:AddSection("Reproduzir Música para Todos")
+
+local musicId = ""  -- ID da música a ser tocada
+local loopMusic = false  -- Controle de loop da música
+local musicPlaying = nil  -- Armazena o som que está tocando
+
+-- Função para tocar música em loop para todos os jogadores
+local function playMusicForAll(id, loop)
+    -- Checa se já existe uma música tocando, e se sim, para ela
+    if musicPlaying then
+        musicPlaying:Stop()
+        musicPlaying:Destroy()
+    end
+
+    -- Cria um novo objeto de som no Workspace
+    musicPlaying = Instance.new("Sound")
+    musicPlaying.SoundId = "rbxassetid://" .. id
+    musicPlaying.Looped = loop
+    musicPlaying.Volume = 1  -- Volume máximo
+    musicPlaying.Parent = game:GetService("Workspace")  -- Coloca o som no Workspace, assim todos podem ouvir
+
+    musicPlaying:Play()
+end
+
+-- Campo de entrada para o ID da música
+Tabs.Music:AddInput("MusicID", {
+    Title = "ID da Música",
     Default = "",
-    Placeholder = "Digite o ID",
+    Placeholder = "Digite o ID da música",
     Numeric = true,
     Finished = true,
-    Callback = function(s)
-        fireAvatarChange(tonumber(s), "Carregando Cabeça...")
-        wait(1)
-        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "Sucesso ✅", Text = "Cabeça aplicada!", Duration = 3})
+    Callback = function(value)
+        musicId = value
     end
 })
 
-Tabs.Avatar:AddButton({ Title = "Headless Horseman (👤)", Callback = function() fireAvatarChange(134082579, "Headless Horseman") end })
-Tabs.Avatar:AddButton({ Title = "Korblox DeathSpeaker (👤)", Callback = function() fireAvatarChange(16580493236, "Korblox DeathSpeaker") end })
-
--- 🚀 **Sistema de ESP**
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
-
-_G.ESPEnabled = false
-_G.TextColor = Color3.fromRGB(255, 0, 0) -- Vermelho
-_G.TextSize = 14
-
-local function ToggleESP(state)
-    _G.ESPEnabled = state
-    if state then
-        for _, v in pairs(Players:GetPlayers()) do
-            if v ~= Players.LocalPlayer then
-                local ESP = Drawing.new("Text")
-                RunService.RenderStepped:Connect(function()
-                    if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                        local Vector, OnScreen = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
-                        ESP.Size = _G.TextSize
-                        ESP.Color = _G.TextColor
-                        ESP.Position = Vector2.new(Vector.X, Vector.Y - 25)
-                        ESP.Text = v.Name
-                        ESP.Visible = _G.ESPEnabled and OnScreen
-                    else
-                        ESP.Visible = false
-                    end
-                end)
-            end
-        end
-    else
-        -- Desativar ESP
-        for _, v in pairs(Players:GetPlayers()) do
-            if v ~= Players.LocalPlayer then
-                -- Certificando-se de que o ESP do player está sendo desativado
-                for _, drawing in pairs(v.Character:GetChildren()) do
-                    if drawing:IsA("Text") then
-                        drawing.Visible = false
-                    end
-                end
-            end
-        end
-    end
-end
-
--- Ativando/Desativando ESP
-Tabs.Troll:AddSwitch({
-    Title = "Ativar/Desativar ESP 🔍",
+-- Campo de seleção para o loop da música
+Tabs.Music:AddToggle("LoopMusic", {
+    Title = "Loop",
     Default = false,
-    Callback = function(state)
-        ToggleESP(state)
+    Callback = function(value)
+        loopMusic = value
     end
 })
 
--- 💀 **KillBrick (mata jogadores que tocarem nele)**
-local KillBrick
-
-Tabs.Troll:AddSwitch({
-    Title = "Spawn KillBrick ☠️",
-    Default = false,
-    Callback = function(state)
-        if state then
-            KillBrick = Instance.new("Part")
-            KillBrick.Size = Vector3.new(5, 1, 5)
-            KillBrick.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, -3, 0)
-            KillBrick.Anchored = true
-            KillBrick.Color = Color3.fromRGB(255, 0, 0)
-            KillBrick.Parent = workspace
-
-            KillBrick.Touched:Connect(function(touch)
-                local humanoid = touch.Parent:FindFirstChild("Humanoid")
-                if humanoid and touch.Parent ~= game.Players.LocalPlayer.Character then
-                    humanoid.Health = 0
-                end
-            end)
-        else
-            if KillBrick then KillBrick:Destroy() end
+-- Botão para iniciar a música para todos os jogadores
+Tabs.Music:AddButton({
+    Title = "Reproduzir Música 🎶",
+    Description = "Reproduza a música para todos os jogadores.",
+    Callback = function()
+        if musicId ~= "" then
+            playMusicForAll(musicId, loopMusic)
         end
     end
 })
-
--- 🏃‍♂️ **Velocidade Infinita**
-Tabs.Troll:AddSwitch({
-    Title = "Velocidade Infinita ⚡",
-    Default = false,
-    Callback = function(state)
-        local player = game.Players.LocalPlayer
-        if state then
-            player.Character.Humanoid.WalkSpeed = 100
-        else
-            player.Character.Humanoid.WalkSpeed = 16
-        end
-    end
-})
-
--- 🚀 **Pulo Infinito**
-Tabs.Troll:AddSwitch({
-    Title = "Pulo Infinito 🦘",
-    Default = false,
-    Callback = function(state)
-        local player = game.Players.LocalPlayer
-        if state then
-            player.Character.Humanoid.JumpPower = 200
-        else
-            player.Character.Humanoid.JumpPower = 50
-        end
-    end
-})
-
--- 🚀 **Finalizando e Exibindo**
-Window:Show()
