@@ -8,6 +8,30 @@ local Window = OrionLib:MakeWindow({
     ConfigFolder = "TrollHub"
 })
 
+-- Criando um botão grande para abrir/fechar o menu
+local toggleKey = Enum.KeyCode.RightShift -- Tecla para abrir/fechar
+local isMenuOpen = true
+
+local OpenCloseButton = Instance.new("ImageButton")
+OpenCloseButton.Size = UDim2.new(0, 100, 0, 100) -- Tamanho grande
+OpenCloseButton.Position = UDim2.new(0.9, 0, 0.05, 0) -- Posição no canto
+OpenCloseButton.BackgroundTransparency = 1
+OpenCloseButton.Image = "rbxassetid://14265681361"
+OpenCloseButton.Parent = game:GetService("CoreGui")
+
+OpenCloseButton.MouseButton1Click:Connect(function()
+    isMenuOpen = not isMenuOpen
+    OrionLib:Toggle(isMenuOpen)
+end)
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == toggleKey then
+        isMenuOpen = not isMenuOpen
+        OrionLib:Toggle(isMenuOpen)
+    end
+end)
+
+
 -- Criando as Abas (Tabs)
 local TrollTab = Window:MakeTab({ Name = "Troll", Icon = "rbxassetid://4483362458", PremiumOnly = false })
 local MusicTab = Window:MakeTab({ Name = "Música", Icon = "rbxassetid://6034509993", PremiumOnly = false })
