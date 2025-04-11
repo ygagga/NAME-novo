@@ -1,4 +1,4 @@
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ScRhyan57/ThisSxHub/refs/heads/main/Library/OrionLibrary.lua"))()
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Sc-Rhyan57/ThisSxHub/refs/heads/main/Library/OrionLibrary.lua')))()
 
 -- Criando a Interface
 local Window = OrionLib:MakeWindow({
